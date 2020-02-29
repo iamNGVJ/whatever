@@ -6,6 +6,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:link/models/product.dart';
 import 'package:http/http.dart' as http;
 import 'package:link/screens/all/product_details.dart';
+import 'package:connectivity/connectivity.dart';
+import 'package:flash/flash.dart';
+import 'package:link/widget_utils/notifications.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -37,6 +40,19 @@ class _HomeState extends State<Home> {
       print(place.country);
     } catch (e) {
       print(e);
+    }
+  }
+
+  Future<bool> checkNetworkConnection() async{
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.mobile) {
+      return true;
+    } else if (connectivityResult == ConnectivityResult.wifi) {
+      return true;
+    }else if(connectivityResult == ConnectivityResult.none){
+      return false;
+    }else{
+      return false;
     }
   }
 
@@ -91,8 +107,17 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    var notify = new Notifications(context);
     int _currentIndex = 0;
     getProducts();
+    checkNetworkConnection().then((status){
+      if(!status){
+        notify.showNetworkError();
+      }else{
+        print('Connected!');
+      }
+    });
+
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(fontFamily: 'VarelaRound'),
