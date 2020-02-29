@@ -1,0 +1,40 @@
+name: link
+description: A new Flutter application.
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^0.1.2
+  flutter_spinkit: ^4.1.1+1
+  flutter_svg: ^0.15.0
+  progress_dialog: ^1.2.0
+  http: ^0.12.0+3
+  flutter_screenutil: ^0.7.0
+  shared_preferences: ^0.5.6
+  geolocator: ^5.1.5
+  connectivity: ^0.4.8+1
+  flash: ^1.1.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+  assets:
+   - assets/images/logo1.svg
+   - assets/images/logo2.svg
+   - assets/images/icons-shop-location-2.png
+   - assets/images/image1.jpg
+   - assets/images/image2.png
+   - assets/data.json
+
+
+  fonts:
+    - family: VarelaRound
+      fonts:
+        - asset: fonts/VarelaRound-Regular.ttf
