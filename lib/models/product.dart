@@ -7,8 +7,8 @@ class Products {
   String storeName;
   String storeId;
   String storeAddress;
-  String storeLatitude;
-  String storeLongitude;
+  double storeLatitude;
+  double storeLongitude;
   String category;
   String description;
   int size;
@@ -38,16 +38,16 @@ class Products {
   Products.fromJSON(Map<String, dynamic> json)
       : size = json['size'],
         rating = json['rating'],
-        name = json['brandName'],
-        model = json['productName'],
+        name = json['name'],
+        model = json['model'],
         imageUrl = json['imageUrl'],
         price = json['price'].toDouble(),
         date = DateTime.parse(json['date']),
         storeName = json['storeName'],
         storeAddress = json['storeAddress'],
         storeId = json['storeId'],
-        storeLatitude = json['storeLatitude'],
-        storeLongitude = json['storeLongitude'],
+        storeLatitude = json['storeLatitude'].toDouble(),
+        storeLongitude = json['storeLongitude'].toDouble(),
         category = json['category'],
         description = json['description'];
 }

@@ -7,12 +7,11 @@ class StarsRating extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: ListView.builder(
-        itemCount: this.rating,
-        itemBuilder: (context, index){
-          return Icon(Icons.star, color: Colors.yellow, size: 5);
-        },
-      )
-    );
+        child: ListView.builder(
+      itemCount: this.rating,
+      itemBuilder: (context, index) {
+        return Icon(Icons.star, color: Colors.yellow, size: 5);
+      },
+    ));
   }
 }
