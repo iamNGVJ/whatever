@@ -1,14 +1,16 @@
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:link/models/categories.dart';
 import 'package:link/models/product.dart';
 import 'package:http/http.dart' as http;
 import 'package:link/screens/all/product_details.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:link/widget_utils/notifications.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -23,6 +25,7 @@ class _HomeState extends State<Home> {
   String _currentCountry;
   List<Products> fetchedProducts;
   List<Products> _products = List<Products>();
+  List<Category> _categories = List<Category>();
 
   _getAddressFromLatLng() async {
     try {
@@ -57,23 +60,19 @@ class _HomeState extends State<Home> {
   }
 
   Future<Placemark> getActualLocation(latitude, longitude) async {
-    List<Placemark> placemark =
+    List<Placemark> placemarc =
         await geoLocator.placemarkFromCoordinates(latitude, longitude);
-    Placemark place = placemark[0];
+    Placemark place = placemarc[0];
     return place;
   }
 
   getCurrentLocation() async {
-    final prefs = await SharedPreferences.getInstance();
     await geoLocator
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
         .then((Position position) {
       setState(() {
         _currentPosition = position;
-        prefs.setDouble('latitude', position.latitude);
-        prefs.setDouble('longitude', position.longitude);
       });
-
       _getAddressFromLatLng();
     }).catchError((e) {
       print(e);
@@ -103,6 +102,23 @@ class _HomeState extends State<Home> {
     }
   }
 
+  List<Category> retrieveCategories(){
+    List<Category> categoryList = [
+      Category("Motors", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
+      Category("Fashion", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
+      Category("Electronics", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
+      Category("Collectables", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
+      Category("Art", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
+      Category("Home and Gardening", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
+      Category("Sport", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
+      Category("Toys", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
+      Category("Business and Industrial", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
+      Category("Music", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg")
+    ];
+
+    return categoryList;
+  }
+
   @override
   void initState() {
     getCurrentLocation();
@@ -111,6 +127,12 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtil.init(
+      context,
+      allowFontScaling: true,
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height,
+    );
     var notify = new Notifications(context);
     int _currentIndex = 0;
     getProducts();
@@ -121,11 +143,17 @@ class _HomeState extends State<Home> {
         print('Connected!');
       }
     });
+    double _height = MediaQuery.of(context).size.height;
+    double _width = MediaQuery.of(context).size.width;
+    print(_height);
+    print(_width);
+
+    _categories = retrieveCategories();
 
     return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(fontFamily: 'VarelaRound'),
-        home: SafeArea(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(fontFamily: 'VarelaRound'),
+      home: SafeArea(
           child: Scaffold(
               body: SingleChildScrollView(
                 child: Column(
@@ -143,12 +171,15 @@ class _HomeState extends State<Home> {
                                   child: Text(
                                     "Product Locator",
                                     style: TextStyle(
-                                        fontSize: 25,
-                                        fontWeight: FontWeight.bold),
+                                      fontSize: ScreenUtil().setSp(
+                                          _width >= 360 ? 21 : 25,
+                                          allowFontScalingSelf: true),
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                                 SizedBox(
-                                  width: 50,
+                                  width: ScreenUtil().setWidth(15),
                                 ),
                                 Row(
                                   children: <Widget>[
@@ -167,8 +198,7 @@ class _HomeState extends State<Home> {
                                       ),
                                       child: _currentLocation != null
                                           ? Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
                                               children: <Widget>[
                                                 Text("$_currentLocation"),
                                                 Text("$_currentCountry")
@@ -196,8 +226,8 @@ class _HomeState extends State<Home> {
                         Container(
                           alignment: Alignment.topLeft,
                           margin: EdgeInsets.only(top: 30),
-                          width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height * 2,
+                          width: ScreenUtil().setWidth(MediaQuery.of(context).size.width),
+                          height: ScreenUtil().setHeight(MediaQuery.of(context).size.height * 1.375),
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(30.0),
@@ -207,17 +237,20 @@ class _HomeState extends State<Home> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               SizedBox(
-                                height: 40,
+                                height: ScreenUtil().setHeight(40),
                               ),
                               Container(
                                 padding: EdgeInsets.all(16.0),
-                                width: MediaQuery.of(context).size.width / 1.3,
+                                width: ScreenUtil().setWidth(
+                                    MediaQuery.of(context).size.width / 1.3),
                                 child: Text(
                                   "What are you looking for?",
                                   style: TextStyle(
-                                      fontSize: 27,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold),
+                                    fontSize: ScreenUtil()
+                                        .setSp(27, allowFontScalingSelf: true),
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                               Container(
@@ -243,9 +276,12 @@ class _HomeState extends State<Home> {
                                 height: 5,
                               ),
                               Container(
-                                padding: EdgeInsets.all(16.0),
+                                padding: EdgeInsets.only(
+                                  left: 16.0,
+                                  right: 16.0
+                                ),
                                 alignment: Alignment.centerLeft,
-                                height: 320,
+                                height: ScreenUtil().setHeight(_height < 640 ? 320 : 340),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
@@ -256,9 +292,10 @@ class _HomeState extends State<Home> {
                                         Text(
                                           "Popular Products",
                                           style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 27,
-                                              fontWeight: FontWeight.bold),
+                                            color: Colors.white,
+                                            fontSize: 27,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                         GestureDetector(
                                             onTap: () {},
@@ -278,137 +315,112 @@ class _HomeState extends State<Home> {
                                         height: 260,
                                         child: _products.length != 0
                                             ? ListView.builder(
-                                                scrollDirection:
-                                                    Axis.horizontal,
+                                                scrollDirection: Axis.horizontal,
                                                 itemCount: _products.length,
                                                 itemBuilder: (context, index) {
                                                   return Card(
                                                     elevation: 24.0,
                                                     child: Container(
-                                                      height: 200,
-                                                      width: 150,
+                                                      height: ScreenUtil().setHeight(200),
+                                                      width: ScreenUtil().setWidth(150),
                                                       decoration: BoxDecoration(
-                                                          color:
-                                                              Colors.white70),
+                                                        color: Colors.white70,
+                                                      ),
                                                       child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
                                                         children: <Widget>[
                                                           Container(
-                                                            height: 140,
-                                                            width: 150,
+                                                            height: ScreenUtil().setHeight(140),
+                                                            width: ScreenUtil().setWidth(150),
                                                             decoration: BoxDecoration(
-                                                                borderRadius: BorderRadius.only(
-                                                                    bottomLeft:
-                                                                        Radius.circular(
-                                                                            16.0),
-                                                                    bottomRight:
-                                                                        Radius.circular(
-                                                                            16.0))),
+                                                              borderRadius: BorderRadius.only(
+                                                                bottomLeft: Radius.circular(16.0),
+                                                                bottomRight: Radius.circular(16.0),
+                                                              ),
+                                                            ),
                                                             child: Hero(
-                                                              tag:
-                                                                  "${_products[index].imageUrl}",
+                                                              tag: "${_products[index].imageUrl}",
                                                               child: Image(
                                                                 image: NetworkImage(
-                                                                    _products[
-                                                                            index]
-                                                                        .imageUrl),
-                                                                fit: BoxFit
-                                                                    .fitWidth,
+                                                                  _products[index].imageUrl,
+                                                                ),
+                                                                fit: BoxFit.fitWidth,
                                                               ),
                                                             ),
                                                           ),
                                                           Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(8.0),
+                                                            padding: const EdgeInsets.all(8.0),
                                                             child: Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .spaceBetween,
-                                                                children: <
-                                                                    Widget>[
+                                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                children: <Widget>[
                                                                   Text(
-                                                                      "${_products[index].name}",
-                                                                      style: TextStyle(
-                                                                          fontWeight:
-                                                                              FontWeight.bold)),
+                                                                    "${_products[index].name}",
+                                                                    style: TextStyle(
+                                                                      fontWeight: FontWeight.bold,
+                                                                    ),
+                                                                  ),
                                                                   Container(
-                                                                      padding:
-                                                                          EdgeInsets.all(
-                                                                              5.0),
-                                                                      decoration:
-                                                                          BoxDecoration(
-                                                                        color: Colors
-                                                                            .blue,
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(15.0),
+                                                                      padding: EdgeInsets.all(5.0),
+                                                                      decoration: BoxDecoration(
+                                                                        color: Colors.blue,
+                                                                        borderRadius: BorderRadius.circular(15.0),
                                                                       ),
-                                                                      child:
-                                                                          Text(
+                                                                      child: Text(
                                                                         "\$${_products[index].price}",
                                                                         style: TextStyle(
-                                                                            color:
-                                                                                Colors.white),
-                                                                      ))
-                                                                ]),
+                                                                          color: Colors.white,
+                                                                        ),
+                                                                      ),
+                                                                  ),
+                                                                ],
+                                                            ),
                                                           ),
                                                           Padding(
-                                                              padding: EdgeInsets
-                                                                  .only(
-                                                                      left: 8.0,
-                                                                      right:
-                                                                          8.0),
+                                                              padding: EdgeInsets.only(left: 8.0, right: 8.0),
                                                               child: Text(
-                                                                  "${_products[index].model}",
-                                                                  style: TextStyle(
-                                                                      fontSize:
-                                                                          11,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w600))),
+                                                                "${_products[index].model}",
+                                                                style: TextStyle(
+                                                                  fontSize: 11,
+                                                                  fontWeight: FontWeight.w600,
+                                                                ),
+                                                              ),
+                                                          ),
                                                           Padding(
-                                                              padding:
-                                                                  EdgeInsets
-                                                                      .all(8.0),
-                                                              child:
-                                                                  GestureDetector(
+                                                              padding: EdgeInsets.all(8.0),
+                                                              child: GestureDetector(
                                                                 onTap: () {
                                                                   Navigator.push(
-                                                                      context,
-                                                                      MaterialPageRoute(
-                                                                          builder: (context) =>
-                                                                              ProductDetails(_products[index])));
+                                                                    context,
+                                                                    MaterialPageRoute(builder: (context) => ProductDetails(_products[index])),
+                                                                  );
                                                                 },
-                                                                child:
-                                                                    Container(
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                          color:
-                                                                              Colors.blue),
+                                                                child: Container(
+                                                                  decoration: BoxDecoration(
+                                                                    color: Colors.blue,
+                                                                  ),
                                                                   child: Padding(
                                                                       padding: EdgeInsets.all(8.0),
                                                                       child: Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
-                                                                        children: <
-                                                                            Widget>[
+                                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                                        children: <Widget>[
                                                                           Text(
-                                                                              "More Details",
-                                                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
+                                                                            "More Details",
+                                                                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+                                                                          ),
                                                                           SizedBox(
-                                                                            width:
-                                                                                5,
+                                                                            width: 5,
                                                                           ),
                                                                           Icon(
-                                                                              Icons.open_in_browser,
-                                                                              size: 15,
-                                                                              color: Colors.white)
+                                                                            Icons.open_in_browser,
+                                                                            size: 15,
+                                                                            color: Colors.white,
+                                                                          )
                                                                         ],
-                                                                      )),
+                                                                      ),
+                                                                  ),
                                                                 ),
-                                                              )),
+                                                              ),
+                                                          ),
                                                         ],
                                                       ),
                                                     ),
@@ -416,66 +428,101 @@ class _HomeState extends State<Home> {
                                                 })
                                             : Center(
                                                 child: Card(
-                                                    elevation: 24.0,
-                                                    child: Container(
-                                                        alignment:
-                                                            Alignment.center,
-                                                        height: 200,
-                                                        width: 400,
-                                                        decoration: BoxDecoration(
-                                                            color: Colors.white,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        16.0)),
-                                                        child: Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .center,
-                                                          children: <Widget>[
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .all(8.0),
-                                                              child: Text(
-                                                                  "Wait While We Find Awesome Products For You",
-                                                                  style: TextStyle(
-                                                                      fontSize:
-                                                                          15,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w600)),
+                                                  elevation: 24.0,
+                                                  child: Container(
+                                                    alignment: Alignment.center,
+                                                    height: 200,
+                                                    width: 400,
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius: BorderRadius.circular(16.0),
+                                                    ),
+                                                    child: Column(
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                                      children: <Widget>[
+                                                        Padding(
+                                                          padding: EdgeInsets.all(8.0),
+                                                          child: Text(
+                                                            "Wait While We Find Awesome Products For You",
+                                                            style: TextStyle(
+                                                              fontSize: 15,
+                                                              fontWeight: FontWeight.w600,
                                                             ),
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .all(8.0),
-                                                              child: SpinKitCircle(
-                                                                  color: Colors
-                                                                      .blue),
-                                                            )
-                                                          ],
-                                                        )))))
+                                                          ),
+                                                        ),
+                                                        Padding(
+                                                          padding: EdgeInsets.all(8.0),
+                                                          child: SpinKitCircle(color: Colors.blue,),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                        ),
+                                    )
                                   ],
                                 ),
                               ),
                               Container(
                                 padding: EdgeInsets.all(16.0),
                                 alignment: Alignment.centerLeft,
-                                height: 500,
+                                height: 320,
                                 child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: <Widget>[
-                                      Text("Discover",
-                                          style: TextStyle(
-                                              fontSize: 27,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white))
-                                    ]),
+                                      Text(
+                                        "Discover",
+                                        style: TextStyle(
+                                          fontSize: 27,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      Container(
+                                        width: double.infinity,
+                                        height: ScreenUtil().setHeight(200),
+                                        child: ListView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: _categories.length,
+                                            itemBuilder: (context, index){
+                                              return Card(
+                                                elevation: 24.0,
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.circular(16.0),
+                                                  ),
+                                                  width: ScreenUtil().setWidth(150),
+                                                  child: Column(
+                                                    children: <Widget>[
+                                                      Container(
+                                                        child: Image(
+                                                          image: NetworkImage(_categories[index].backgroundImageUrl),
+                                                          fit: BoxFit.fill
+                                                        ),
+                                                        height: 150,
+                                                        decoration: BoxDecoration(
+                                                          borderRadius: BorderRadius.only(
+                                                            bottomLeft: Radius.circular(25.0),
+                                                            bottomRight: Radius.circular(25.0)
+                                                          )
+                                                        )
+                                                      ),
+                                                      Text(
+                                                        _categories[index].title,
+                                                        style: TextStyle(
+                                                          fontWeight: FontWeight.w600,
+                                                        )
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                        )
+                                      )
+                                    ]
+                                ),
                               )
                             ],
                           ),
@@ -485,32 +532,8 @@ class _HomeState extends State<Home> {
                   ],
                 ),
               ),
-              bottomNavigationBar: BottomNavigationBar(
-                currentIndex: _currentIndex,
-                items: [
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.home),
-                      title: Text("Home"),
-                      backgroundColor: Colors.blue),
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.search),
-                      title: Text("Search"),
-                      backgroundColor: Colors.blue),
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.person),
-                      title: Text("Profile"),
-                      backgroundColor: Colors.blue),
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.settings),
-                      title: Text("Settings"),
-                      backgroundColor: Colors.blue)
-                ],
-                onTap: (index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                },
-              )),
-        ));
+          ),
+      ),
+    );
   }
 }

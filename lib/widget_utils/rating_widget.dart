@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 
 class StarsRating extends StatelessWidget {
-  final int rating;
-  StarsRating(this.rating);
+  final int value;
+  const StarsRating({Key key, this.value = 0})
+      : assert(value != null),
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        child: ListView.builder(
-      itemCount: this.rating,
-      itemBuilder: (context, index) {
-        return Icon(Icons.star, color: Colors.yellow, size: 5);
-      },
-    ));
+      child: Row(
+        children: List.generate(5, (index) {
+          return Icon(
+            index < value ? Icons.star : Icons.star_border,
+            size: 20,
+          );
+        }),
+      ),
+    );
   }
 }

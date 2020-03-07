@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:link/calculations/utility.dart';
 import 'package:link/screens/splash_screen.dart';
 
 void main() {
@@ -12,6 +13,8 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    var utility = new Utility();
+    utility.search("Adidas");
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Product Locator',

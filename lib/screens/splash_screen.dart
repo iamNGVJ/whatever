@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:link/screens/onboarding_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,21 +32,33 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-
     Timer(Duration(seconds: 10), toOnboardingScreen);
   }
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtil.init(context,
+        allowFontScaling: true,
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height);
     return Scaffold(
         body: Stack(fit: StackFit.expand, children: <Widget>[
       Container(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
-          child: Image.asset(
-            "assets/images/image1.jpg",
-            fit: BoxFit.fitHeight,
-          )),
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/images/image1.jpg"),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+          child: Container(
+            color: Colors.black.withOpacity(0),
+          ),
+        ),
+      ),
       Column(
         children: <Widget>[
           Expanded(
@@ -59,7 +73,8 @@ class _SplashScreenState extends State<SplashScreen> {
                     Text("Product Locator",
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 28.0,
+                          fontSize: ScreenUtil()
+                              .setSp(28.0, allowFontScalingSelf: true),
                         ))
                   ]))),
           Expanded(
@@ -72,7 +87,8 @@ class _SplashScreenState extends State<SplashScreen> {
                   Text("Every Product Within Your Reach",
                       style: TextStyle(
                           color: Colors.white,
-                          fontSize: 15.0,
+                          fontSize: ScreenUtil()
+                              .setSp(15.0, allowFontScalingSelf: true),
                           fontWeight: FontWeight.w700))
                 ],
               ))

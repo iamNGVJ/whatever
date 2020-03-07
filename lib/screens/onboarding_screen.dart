@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:link/screens/auth/register_screen.dart';
 import 'auth/signin_screen.dart';
 
@@ -22,28 +24,42 @@ class _OnboardingState extends State<Onboarding> {
               children: <Widget>[
                 Container(
                   height: MediaQuery.of(context).size.height,
+                  width: MediaQuery.of(context).size.width,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(40.0),
-                        bottomRight: Radius.circular(40.0)),
+                    image: DecorationImage(
+                      image: AssetImage("assets/images/image1.jpg"),
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                  child: Image.asset("assets/images/image1.jpg",
-                      fit: BoxFit.fitHeight),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                    child: Container(
+                      color: Colors.black.withOpacity(0),
+                    ),
+                  ),
                 ),
                 Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
+                  width:
+                      ScreenUtil().setWidth(MediaQuery.of(context).size.width),
+                  height: ScreenUtil()
+                      .setHeight(MediaQuery.of(context).size.height),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       SizedBox(
-                        height: MediaQuery.of(context).size.width / 2,
+                        height: ScreenUtil()
+                            .setHeight(MediaQuery.of(context).size.width / 2),
                       ),
-                      Text("Product Locator",
-                          style:
-                              TextStyle(fontSize: 28.0, color: Colors.white)),
+                      Text(
+                        "Product Locator",
+                        style: TextStyle(
+                            fontSize: ScreenUtil()
+                                .setSp(28.0, allowFontScalingSelf: true),
+                            color: Colors.white),
+                      ),
                       SizedBox(
-                        height: MediaQuery.of(context).size.width / 2,
+                        height: ScreenUtil()
+                            .setHeight(MediaQuery.of(context).size.width / 2),
                       ),
                       MaterialButton(
                         onPressed: () {
@@ -54,7 +70,7 @@ class _OnboardingState extends State<Onboarding> {
                         },
                         child: Container(
                           alignment: Alignment.center,
-                          height: 50,
+                          height: ScreenUtil().setHeight(50),
                           decoration: BoxDecoration(
                               border: Border(
                                   top: BorderSide(color: Colors.white),
@@ -64,14 +80,15 @@ class _OnboardingState extends State<Onboarding> {
                           child: Text(
                             "Sign In",
                             style: TextStyle(
-                                fontSize: 15,
+                                fontSize: ScreenUtil()
+                                    .setSp(15, allowFontScalingSelf: true),
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white),
                           ),
                         ),
                       ),
                       SizedBox(
-                        height: 10,
+                        height: ScreenUtil().setHeight(10),
                       ),
                       MaterialButton(
                         onPressed: () {
@@ -82,7 +99,7 @@ class _OnboardingState extends State<Onboarding> {
                         },
                         child: Container(
                           alignment: Alignment.center,
-                          height: 50,
+                          height: ScreenUtil().setHeight(50),
                           decoration: BoxDecoration(
                               border: Border(
                                   top: BorderSide(color: Colors.white),
@@ -91,7 +108,8 @@ class _OnboardingState extends State<Onboarding> {
                                   right: BorderSide(color: Colors.white))),
                           child: Text("Register",
                               style: TextStyle(
-                                  fontSize: 15,
+                                  fontSize: ScreenUtil()
+                                      .setSp(15, allowFontScalingSelf: true),
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white)),
                         ),
@@ -103,7 +121,11 @@ class _OnboardingState extends State<Onboarding> {
                   bottom: 10,
                   child: Text(
                     "hit200-v1.00",
-                    style: TextStyle(fontSize: 10, color: Colors.white),
+                    style: TextStyle(
+                      fontSize:
+                          ScreenUtil().setSp(10, allowFontScalingSelf: true),
+                      color: Colors.white,
+                    ),
                   ),
                 )
               ],

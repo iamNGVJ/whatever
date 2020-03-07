@@ -9,10 +9,12 @@ class MapScreen extends StatefulWidget {
   final double storeLongitude;
   MapScreen(this.storeLatitude, this.storeLongitude);
   @override
-  _MapScreenState createState() => _MapScreenState();
+  _MapScreenState createState() =>
+      _MapScreenState(storeLatitude, storeLongitude);
 }
 
 class _MapScreenState extends State<MapScreen> {
+  _MapScreenState(this.storeLatitude, this.storeLongitude);
   static Position _currentPosition;
   var storeLatitude;
   var storeLongitude;
@@ -30,62 +32,90 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
-  void _onMapCreated(GoogleMapController controller){
+  void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+    setState(() {
+      _markers.add(Marker(
+          markerId: MarkerId(""),
+          position: LatLng(this.storeLatitude, this.storeLongitude),
+          icon: pinLocationIcon));
+    });
+  }
+
+  BitmapDescriptor pinLocationIcon;
+  Set<Marker> _markers = {};
+
+  @override
+  void initState() {
+    BitmapDescriptor.fromAssetImage(
+      ImageConfiguration(devicePixelRatio: 2.5),
+      "assets/images/marker.png",
+    ).then((onValue) {
+      pinLocationIcon = onValue;
+    });
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     getCurrentLocation();
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              Stack(
-                children: <Widget>[
-                  Container(
-                      height: ScreenUtil().setHeight(MediaQuery.of(context).size.height / 1.5),
-                      width: ScreenUtil().setWidth(MediaQuery.of(context).size.width),
-                      child: _currentPosition != null ? GoogleMap(
-                        onMapCreated: _onMapCreated,
-                        initialCameraPosition: CameraPosition(
-                            target: LatLng(_currentPosition.latitude, _currentPosition.longitude),
-                            zoom: 16.0,
-                        ),
-                      ) : Center(
-                        child: SpinKitCircle(
-                            color: Colors.blue,
-                        ),
-                      )
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(
-                          "Map View",
-                          style: TextStyle(
-                            fontSize: ScreenUtil().setSp(20, allowFontScalingSelf: true),
-                            fontWeight: FontWeight.w600
+    return MaterialApp(
+      home: Scaffold(
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                Stack(
+                  children: <Widget>[
+                    Container(
+                        height: ScreenUtil().setHeight(
+                            MediaQuery.of(context).size.height / 1.5),
+                        width: ScreenUtil()
+                            .setWidth(MediaQuery.of(context).size.width),
+                        child: _currentPosition != null
+                            ? GoogleMap(
+                                markers: _markers,
+                                myLocationEnabled: true,
+                                onMapCreated: _onMapCreated,
+                                initialCameraPosition: CameraPosition(
+                                  target: LatLng(_currentPosition.latitude,
+                                      _currentPosition.longitude),
+                                  zoom: 16.0,
+                                ),
+                              )
+                            : Center(
+                                child: SpinKitCircle(
+                                  color: Colors.blue,
+                                ),
+                              )),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            "Map View",
+                            style: TextStyle(
+                                fontSize: ScreenUtil()
+                                    .setSp(20, allowFontScalingSelf: true),
+                                fontWeight: FontWeight.w600),
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: (){
-                            Navigator.pop(context);
-                          },
-                          child: Icon(
-                            Icons.close,
-                            size: 30,
-                          ),
-                        )
-                      ],
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            child: Icon(
+                              Icons.close,
+                              size: 30,
+                            ),
+                          )
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              )
-            ],
+                  ],
+                )
+              ],
+            ),
           ),
         ),
       ),

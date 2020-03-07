@@ -1,6 +1,7 @@
 import "dart:async";
 import "dart:convert";
 import "package:flutter/material.dart";
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import "package:flutter_spinkit/flutter_spinkit.dart";
 import "package:link/models/user.dart";
 import "package:link/screens/auth/signin_screen.dart";
@@ -34,22 +35,36 @@ class _RegisterAccountState extends State<RegisterAccount> {
       return User.fromJson(json.decode(response.body));
     } else if (response.statusCode == 401) {
       pr.update(
-          message: "User exists. Please login",
-          progressWidget: SpinKitCircle(color: Colors.redAccent),
-          messageTextStyle: TextStyle(
-              color: Colors.red, fontSize: 19.0, fontWeight: FontWeight.w600));
+        message: "User exists. Please login",
+        progressWidget: SpinKitCircle(
+          color: Colors.redAccent,
+        ),
+        messageTextStyle: TextStyle(
+          color: Colors.red,
+          fontSize: ScreenUtil().setSp(19.0, allowFontScalingSelf: true),
+          fontWeight: FontWeight.w600,
+        ),
+      );
       Timer(Duration(seconds: 3), () {
         pr.hide().then((isHidden) {
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => SignIn()));
+            context,
+            MaterialPageRoute(builder: (context) => SignIn()),
+          );
         });
       });
     } else {
       pr.update(
-          message: "Server error. Try changing username.",
-          progressWidget: SpinKitCircle(color: Colors.redAccent),
-          messageTextStyle: TextStyle(
-              color: Colors.red, fontSize: 19.0, fontWeight: FontWeight.w600));
+        message: "Server error. Try changing username.",
+        progressWidget: SpinKitCircle(
+          color: Colors.redAccent,
+        ),
+        messageTextStyle: TextStyle(
+          color: Colors.red,
+          fontSize: ScreenUtil().setSp(19.0, allowFontScalingSelf: true),
+          fontWeight: FontWeight.w600,
+        ),
+      );
       Timer(Duration(seconds: 3), () {
         pr.hide();
       });
@@ -61,13 +76,15 @@ class _RegisterAccountState extends State<RegisterAccount> {
     ProgressDialog pr;
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(fontFamily: "VarelaRound"),
+        theme: ThemeData(
+          fontFamily: "VarelaRound",
+        ),
         home: Scaffold(
             body: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
                 child: SafeArea(
                     child: Column(children: <Widget>[
-                  SizedBox(height: 50),
+                  SizedBox(height: ScreenUtil().setHeight(50)),
                   Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -75,19 +92,23 @@ class _RegisterAccountState extends State<RegisterAccount> {
                           children: <Widget>[
                             Text(
                               "Proceed with your",
-                              style:
-                                  TextStyle(fontSize: 30, color: Colors.grey),
+                              style: TextStyle(
+                                  fontSize: ScreenUtil()
+                                      .setSp(30, allowFontScalingSelf: true),
+                                  color: Colors.grey),
                             ),
                             Text(
                               "Registration",
                               style: TextStyle(
-                                  fontSize: 35, fontWeight: FontWeight.bold),
+                                  fontSize: ScreenUtil()
+                                      .setSp(35, allowFontScalingSelf: true),
+                                  fontWeight: FontWeight.bold),
                             ),
                             Form(
                               key: _formKey,
                               child: Column(
                                 children: <Widget>[
-                                  SizedBox(height: 50),
+                                  SizedBox(height: ScreenUtil().setHeight(50)),
                                   Padding(
                                     padding: const EdgeInsets.only(
                                         top: 8.0, bottom: 8.0),
@@ -174,18 +195,19 @@ class _RegisterAccountState extends State<RegisterAccount> {
                                       obscureText: true,
                                     ),
                                   ),
-                                  SizedBox(height: 30),
+                                  SizedBox(height: ScreenUtil().setHeight(30)),
                                   MaterialButton(
                                     child: Container(
                                         alignment: Alignment.center,
-                                        height: 50,
+                                        height: ScreenUtil().setHeight(50),
                                         decoration: BoxDecoration(
                                           color: Color(0xFF6C00E9),
                                         ),
                                         child: Text(
                                           "Register",
                                           style: TextStyle(
-                                              fontSize: 20,
+                                              fontSize: ScreenUtil().setSp(20,
+                                                  allowFontScalingSelf: true),
                                               color: Colors.white),
                                         )),
                                     onPressed: () async {
@@ -195,17 +217,21 @@ class _RegisterAccountState extends State<RegisterAccount> {
                                             isDismissible: true,
                                             showLogs: false);
                                         pr.style(
-                                            message: "Creating Account",
-                                            borderRadius: 10.0,
-                                            backgroundColor: Colors.white,
-                                            progressWidget: SpinKitCircle(
-                                                color: Color(0xFF6C00E9)),
-                                            elevation: 10.0,
-                                            insetAnimCurve: Curves.easeInOut,
-                                            messageTextStyle: TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 19.0,
-                                                fontWeight: FontWeight.w600));
+                                          message: "Creating Account",
+                                          borderRadius: 10.0,
+                                          backgroundColor: Colors.white,
+                                          progressWidget: SpinKitCircle(
+                                            color: Color(0xFF6C00E9),
+                                          ),
+                                          elevation: 10.0,
+                                          insetAnimCurve: Curves.easeInOut,
+                                          messageTextStyle: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: ScreenUtil().setSp(19.0,
+                                                allowFontScalingSelf: true),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        );
                                         pr.show();
                                         var user = await _register(
                                             pr,
@@ -215,22 +241,27 @@ class _RegisterAccountState extends State<RegisterAccount> {
                                             this.password);
                                         if (user.username != null) {
                                           pr.update(
-                                              message:
-                                                  "Account created. User can now log in.",
-                                              progressWidget: SpinKitCircle(
-                                                  color: Colors.greenAccent),
-                                              messageTextStyle: TextStyle(
-                                                  color: Colors.black,
-                                                  fontSize: 19.0,
-                                                  fontWeight: FontWeight.w600));
+                                            message:
+                                                "Account created. User can now log in.",
+                                            progressWidget: SpinKitCircle(
+                                              color: Colors.greenAccent,
+                                            ),
+                                            messageTextStyle: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: ScreenUtil().setSp(19.0,
+                                                  allowFontScalingSelf: true),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          );
                                           Timer(Duration(seconds: 2), () {
                                             pr.hide().then((isHidden) {
                                               Navigator.pop(context);
                                               Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          SignIn()));
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        SignIn()),
+                                              );
                                             });
                                           });
                                         }
