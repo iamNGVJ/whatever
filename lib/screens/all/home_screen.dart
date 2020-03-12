@@ -2,15 +2,20 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:link/models/categories.dart';
 import 'package:link/models/product.dart';
 import 'package:http/http.dart' as http;
 import 'package:link/screens/all/product_details.dart';
 import 'package:connectivity/connectivity.dart';
-import 'package:link/widget_utils/notifications.dart';
+import 'package:link/screens/all/search_results_screen.dart';
+import 'package:link/screens/all/viewby_category_screen.dart';
+
+import 'all_products_screen.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -26,6 +31,7 @@ class _HomeState extends State<Home> {
   List<Products> fetchedProducts;
   List<Products> _products = List<Products>();
   List<Category> _categories = List<Category>();
+  String searchQuery = "";
 
   _getAddressFromLatLng() async {
     try {
@@ -104,16 +110,18 @@ class _HomeState extends State<Home> {
 
   List<Category> retrieveCategories(){
     List<Category> categoryList = [
-      Category("Motors", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
-      Category("Fashion", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
-      Category("Electronics", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
-      Category("Collectables", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
-      Category("Art", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
-      Category("Home and Gardening", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
-      Category("Sport", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
-      Category("Toys", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
-      Category("Business and Industrial", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg"),
-      Category("Music", "https://c.static-nike.com/a/images/t_PDP_1280_v1/f_auto/vomd5flqslkneosbdkdr/air-max-97-shoe-C1Xtkx.jpg")
+      Category("Motors", null, "https://www.loebermotors.com/public/images/mercedesbenz-main_o.jpg", "motors"),
+      Category("Fashion", null, "https://bec2df9eb90bb6604cfc-660d71a7a33bc04488a7427f5fddcedf.ssl.cf3.rackcdn.com/uploads/product_image/photo/5d39e2be9736d438fd07eab6/medium_2019_07_25_Tom_Naomi_BellaAndBlue_54405.jpg", "fashion"),
+      Category("Electronics",  null, "https://www.nutsvolts.com/uploads/articles/NV_0704_Christopherson_Large.jpg", "electronics"),
+      Category("Collectables", null, "https://www.africancollectables.com/wp-content/uploads/2018/03/Dark-Wood-and-Silver-Jewellery-Box-African-Collectables.jpg", "collectables"),
+      Category("Art", null, "https://live.mrf.io/statics/i/ps/www.herald.co.zw/wp-content/uploads/sites/2/2019/09/1609HR0700MUGABE-PAINTING.jpg?width=1200&enable=upscale", "art"),
+      Category("Home &", "Gardening", "https://media.angieslist.com/s3fs-public/styles/widescreen_large/s3/s3fs-public/home-garden.JPG?37enwB2E.rbKnI5YrW6JZ_irCpGbr5ct&itok=Usbna66n", "home"),
+      Category("Sport",  null, "https://thinkwy.org/wp-content/uploads/2017/10/hpfulq-1234.jpg", "sport"),
+      Category("Toys", null,  "https://cdn.vox-cdn.com/thumbor/Wa_GKNeLJfd_xKZyqP88ak84LZE=/0x0:6953x4750/1200x800/filters:focal(2921x1819:4033x2931)/cdn.vox-cdn.com/uploads/chorus_image/image/65820406/AdobeStock_259518799.0.jpeg", "toys"),
+      Category("Industrial &", "Business", "https://www.continental-industry.com/getmedia/1acbdcf3-c675-4905-a711-3b21e50ecd5a/Steam-cleaning-hoses_Industrial-hoses_CT_Mother-2019.jpg.aspx?ext=.jpg&width=712", "industrial"),
+      Category("Music",  null, "https://cdn3.pitchfork.com/longform/683/Year_In_Streaming_v2.jpg", "music"),
+      Category("Self-care", null, "https://image.kilimall.com/kenya/shop/store/goods/2157/2018/11/2157_05948174760463840_720.jpg", "selfcare"),
+      Category("Accessories", null, "https://image.roku.com/ww/ramp/images/category/accessories-players.png", "accessories")
     ];
 
     return categoryList;
@@ -133,14 +141,27 @@ class _HomeState extends State<Home> {
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
     );
-    var notify = new Notifications(context);
-    int _currentIndex = 0;
     getProducts();
     checkNetworkConnection().then((status) {
       if (!status) {
-        notify.showNetworkError();
+        Fluttertoast.showToast(
+          msg: "No internet connection",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIos: 2,
+          backgroundColor: Colors.red,
+          fontSize: 16
+        );
       } else {
         print('Connected!');
+        Fluttertoast.showToast(
+            msg: "Connected",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIos: 2,
+            backgroundColor: Colors.green,
+            fontSize: 16
+        );
       }
     });
     double _height = MediaQuery.of(context).size.height;
@@ -150,10 +171,7 @@ class _HomeState extends State<Home> {
 
     _categories = retrieveCategories();
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(fontFamily: 'VarelaRound'),
-      home: SafeArea(
+    return SafeArea(
           child: Scaffold(
               body: SingleChildScrollView(
                 child: Column(
@@ -168,14 +186,20 @@ class _HomeState extends State<Home> {
                                 Padding(
                                   padding: EdgeInsets.only(
                                       top: 16.0, right: 0.0, left: 16.0),
-                                  child: Text(
-                                    "Product Locator",
-                                    style: TextStyle(
-                                      fontSize: ScreenUtil().setSp(
-                                          _width >= 360 ? 21 : 25,
-                                          allowFontScalingSelf: true),
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  child: Row(
+                                    children: <Widget>[
+                                      GestureDetector(child: Icon(Icons.menu, size: 30,), onTap: (){print("Menu tapped");},),
+                                      SizedBox(width: 10),
+                                      Text(
+                                        "Product Locator",
+                                        style: TextStyle(
+                                          fontSize: ScreenUtil().setSp(
+                                              _width >= 360 ? 21 : 25,
+                                              allowFontScalingSelf: true),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 SizedBox(
@@ -227,12 +251,14 @@ class _HomeState extends State<Home> {
                           alignment: Alignment.topLeft,
                           margin: EdgeInsets.only(top: 30),
                           width: ScreenUtil().setWidth(MediaQuery.of(context).size.width),
-                          height: ScreenUtil().setHeight(MediaQuery.of(context).size.height * 1.375),
+                          height: ScreenUtil().setHeight(MediaQuery.of(context).size.height * 1.4),
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(30.0),
-                                  topRight: Radius.circular(30.0)),
-                              color: Color(0xFF6C00E9)),
+                                  topRight: Radius.circular(30.0),
+                              ),
+                              color: Color(0xFF6C00E9),
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
@@ -253,24 +279,54 @@ class _HomeState extends State<Home> {
                                   ),
                                 ),
                               ),
-                              Container(
-                                padding: EdgeInsets.all(16.0),
-                                child: Form(
-                                  key: _formKey,
-                                  child: TextFormField(
-                                    decoration: InputDecoration(
-                                        hintText: "e.g. Nike Airmax",
-                                        hintStyle:
-                                            TextStyle(color: Colors.white),
-                                        labelText: "Search",
-                                        labelStyle:
-                                            TextStyle(color: Colors.white),
-                                        border: OutlineInputBorder(
+                              Stack(
+                                children: <Widget>[
+                                  Container(
+                                    padding: EdgeInsets.all(16.0),
+                                    child: Form(
+                                      key: _formKey,
+                                      child: TextFormField(
+                                        decoration: InputDecoration(
+                                          hintText: "e.g. Nike Airmax",
+                                          hintStyle: TextStyle(color: Colors.white),
+                                          labelText: "Search",
+                                          labelStyle: TextStyle(color: Colors.white),
+                                          border: OutlineInputBorder(
                                             gapPadding: 3.5,
-                                            borderRadius:
-                                                BorderRadius.circular(8.0))),
+                                            borderRadius: BorderRadius.circular(8.0),
+                                          ),
+                                      ),
+                                        // ignore: missing_return
+                                        validator: (value){
+                                          if(value.isEmpty){
+                                            Fluttertoast.showToast(
+                                              msg: "Search query can't be empty",
+                                              backgroundColor: Colors.grey,
+                                              textColor: Colors.red,
+                                            );
+                                          }else{
+                                            this.searchQuery = value;
+                                          }
+                                        },
+                                    ),
                                   ),
                                 ),
+                                  Positioned(
+                                    right: 10,
+                                    top: 20,
+                                    child: IconButton(
+                                      icon: Icon(Icons.arrow_forward),
+                                      color: Colors.white,
+                                      onPressed: (){
+                                        if(_formKey.currentState.validate()){
+                                          if(this.searchQuery != ""){
+                                            Navigator.push(context, MaterialPageRoute(builder: (context) => SearchResults(this.searchQuery, this._products)));
+                                          }
+                                        }
+                                      },
+                                    ),
+                                  )
+                                ],
                               ),
                               SizedBox(
                                 height: 5,
@@ -298,7 +354,9 @@ class _HomeState extends State<Home> {
                                           ),
                                         ),
                                         GestureDetector(
-                                            onTap: () {},
+                                            onTap: () {
+                                              Navigator.push(context, MaterialPageRoute(builder: (context) => AllProductsScreen(this._products)));
+                                            },
                                             child: Row(
                                               children: <Widget>[
                                                 Text("View More",
@@ -481,12 +539,16 @@ class _HomeState extends State<Home> {
                                       ),
                                       Container(
                                         width: double.infinity,
-                                        height: ScreenUtil().setHeight(200),
+                                        height: ScreenUtil().setHeight(210),
                                         child: ListView.builder(
                                             scrollDirection: Axis.horizontal,
                                             itemCount: _categories.length,
                                             itemBuilder: (context, index){
-                                              return Card(
+                                              return GestureDetector(
+                                              onTap: (){
+                                                Navigator.push(context, MaterialPageRoute(builder: (context) => ViewByCategory(_categories[index].query, _products)));
+                                              },
+                                              child: Card(
                                                 elevation: 24.0,
                                                 child: Container(
                                                   decoration: BoxDecoration(
@@ -496,27 +558,37 @@ class _HomeState extends State<Home> {
                                                   child: Column(
                                                     children: <Widget>[
                                                       Container(
+                                                        height: 150,
                                                         child: Image(
                                                           image: NetworkImage(_categories[index].backgroundImageUrl),
-                                                          fit: BoxFit.fill
-                                                        ),
-                                                        height: 150,
-                                                        decoration: BoxDecoration(
-                                                          borderRadius: BorderRadius.only(
-                                                            bottomLeft: Radius.circular(25.0),
-                                                            bottomRight: Radius.circular(25.0)
-                                                          )
+                                                          fit: BoxFit.cover,
                                                         )
                                                       ),
-                                                      Text(
-                                                        _categories[index].title,
-                                                        style: TextStyle(
-                                                          fontWeight: FontWeight.w600,
-                                                        )
-                                                      )
+                                                      Padding(
+                                                        padding: const EdgeInsets.all(10.0),
+                                                        child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          children: <Widget>[
+                                                            Text(
+                                                              "Category",
+                                                              style: TextStyle(
+                                                                fontSize: 15,
+                                                                fontWeight: FontWeight.bold,
+                                                              ),
+                                                            ),
+                                                            _categories[index].title2 != null ? Column(
+                                                              children: <Widget>[
+                                                                Text(_categories[index].title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),),
+                                                                Text(_categories[index].title2, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),),
+                                                              ],
+                                                            ) : Text(_categories[index].title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),),
+                                                          ],
+                                                        ),
+                                                      ),
                                                     ],
                                                   ),
                                                 ),
+                                              ),
                                               );
                                             }
                                         )
@@ -533,7 +605,6 @@ class _HomeState extends State<Home> {
                 ),
               ),
           ),
-      ),
     );
   }
 }

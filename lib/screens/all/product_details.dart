@@ -22,8 +22,7 @@ class _ProductDetailsState extends State<ProductDetails> {
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height);
     print(this.product.size);
-    return MaterialApp(
-      home: Scaffold(
+    return Scaffold(
         body: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
@@ -350,19 +349,12 @@ class _ProductDetailsState extends State<ProductDetails> {
                                   fontWeight: FontWeight.w400,
                                 ),
                               ),
-                              this.product.storeLatitude != null &&
-                                      this.product.storeLongitude != null
-                                  ? GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) => MapScreen(
-                                                    this.product.storeLatitude,
-                                                    this
-                                                        .product
-                                                        .storeLongitude)));
-                                      },
+                              this.product.storeLatitude != null && this.product.storeLongitude != null ? GestureDetector(
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(
+                                    builder: (context) => MapScreen(this.product),),
+                                  );
+                                  },
                                       child: Container(
                                         alignment: Alignment.center,
                                         height: ScreenUtil().setHeight(30),
@@ -397,7 +389,6 @@ class _ProductDetailsState extends State<ProductDetails> {
             ),
           ),
         ),
-      ),
     );
   }
 }
