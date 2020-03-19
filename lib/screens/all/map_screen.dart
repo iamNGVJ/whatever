@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_map_polyline/google_map_polyline.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:latlong/latlong.dart' as LatLong;
+import 'package:haversine/haversine.dart';
 import 'package:link/models/product.dart';
 
 class MapScreen extends StatefulWidget {
@@ -70,8 +70,8 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   calculateDistance(latitude, longitude){
-    LatLong.Distance distance = new LatLong.Distance();
-    final double km = distance.as(LatLong.LengthUnit.Kilometer, new LatLong.LatLng(_currentPosition.latitude, _currentPosition.longitude), new LatLong.LatLng(latitude, longitude));
+    final haversine = new Haversine.fromDegrees(latitude1: _currentPosition.latitude, longitude1: _currentPosition.longitude, latitude2: latitude, longitude2: longitude);
+    var km = haversine.distance();
     return km;
   }
 
@@ -87,12 +87,12 @@ class _MapScreenState extends State<MapScreen> {
       pinLocationIcon = onValue;
     });
     super.initState();
-    getSomePoints();
   }
 
   @override
   Widget build(BuildContext context) {
     getCurrentLocation();
+    getSomePoints();
     return Scaffold(
         body: SafeArea(
           child: SingleChildScrollView(
@@ -192,9 +192,8 @@ class _MapScreenState extends State<MapScreen> {
                           fontWeight: FontWeight.w400,
                         )
                       ),
-                      Text(calculateDistance(this.widget.product.storeLatitude, this.widget.product.storeLongitude) > 0.99 ?
-                      "${calculateDistance(this.widget.product.storeLatitude, this.widget.product.storeLongitude)}km":
-                      "${calculateDistance(this.widget.product.storeLatitude, this.widget.product.storeLongitude) * 100}m",
+                      Text(
+                      "${(calculateDistance(this.widget.product.storeLatitude, this.widget.product.storeLongitude) / 1000).toStringAsPrecision(3)}km",
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w400,

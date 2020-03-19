@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:link/models/user.dart';
 import 'package:link/screens/all/home_screen.dart';
+import 'package:link/screens/auth/otp_login_screen.dart';
 import 'package:link/screens/auth/register_screen.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:http/http.dart' as http;
@@ -25,7 +25,7 @@ class _SignInState extends State<SignIn> {
 
   // ignore: missing_return
   Future<User> _login(ProgressDialog pr, username, password) async {
-    const url = 'http://hitwo-api.herokuapp.com/signin';
+    const url = 'http://hitwo-api.herokuapp.com/mobile/signin';
     var response;
 
     try {
@@ -71,6 +71,35 @@ class _SignInState extends State<SignIn> {
           scrollDirection: Axis.vertical,
           child: SafeArea(
             child: Column(children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    InkWell(
+                      child: Icon(Icons.arrow_back, size: 30,),
+                      onTap: (){
+                        Navigator.pop(context);
+                       },
+                    ),
+                    InkWell(
+                      child: Text(
+                        "Don't have an account?",
+                        style:TextStyle(
+                          color: Colors.grey,
+                          fontSize: 18,
+                        ),
+                      ),
+                      onTap: (){
+                        Navigator.pop(context);
+                        Navigator.push(context, MaterialPageRoute(
+                          builder: (context) => RegisterAccount()
+                        ));
+                      },
+                    ),
+                  ]
+                ),
+              ),
               SizedBox(height: ScreenUtil().setHeight(120)),
               Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -172,6 +201,7 @@ class _SignInState extends State<SignIn> {
                                 pr.show();
                                 var user = await _login(pr, this.username, this.password);
                                 if (user.username != null) {
+                                  await prefs.setString('id', user.id);
                                   await prefs.setString('username', user.username);
                                   await prefs.setString('email', user.email);
                                   await prefs.setString('mobileNumber', user.mobileNumber);
@@ -195,6 +225,21 @@ class _SignInState extends State<SignIn> {
                               }
                             },
                           ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16.0),
+                            child: InkWell(
+                              child: Text(
+                                "Use OTP instead?",
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              onTap: (){
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => OtpLogin()));
+                              },
+                            ),
+                          )
                         ],
                       ),
                     )

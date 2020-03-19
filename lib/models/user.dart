@@ -1,4 +1,5 @@
 class User {
+  String id;
   String username;
   String email;
   bool isVerified;
@@ -6,14 +7,19 @@ class User {
   List<dynamic> likes;
 
   User(
-      {this.username,
-      this.email,
-      this.isVerified,
-      this.mobileNumber,
-      this.likes});
+      {
+        this.id,
+        this.username,
+        this.email,
+        this.isVerified,
+        this.mobileNumber,
+        this.likes
+      }
+      );
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
+        id: json['id'],
         username: json['username'],
         email: json['email'],
         isVerified: json['isVerified'],

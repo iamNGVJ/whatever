@@ -14,7 +14,9 @@ import 'package:link/screens/all/product_details.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:link/screens/all/search_results_screen.dart';
 import 'package:link/screens/all/viewby_category_screen.dart';
-
+import 'package:link/screens/auth/signin_screen.dart';
+import 'package:progress_dialog/progress_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'all_products_screen.dart';
 
 class Home extends StatefulWidget {
@@ -24,6 +26,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   final _formKey = GlobalKey<FormState>();
+  var prefs;
   final Geolocator geoLocator = Geolocator()..forceAndroidLocationManager;
   Position _currentPosition;
   String _currentLocation;
@@ -32,6 +35,7 @@ class _HomeState extends State<Home> {
   List<Products> _products = List<Products>();
   List<Category> _categories = List<Category>();
   String searchQuery = "";
+  bool isCollapsed = true;
 
   _getAddressFromLatLng() async {
     try {
@@ -88,7 +92,7 @@ class _HomeState extends State<Home> {
   // ignore: missing_return
   Future<List<Products>> getProducts() async {
     print("fetching products");
-    const url = 'http://hitwo-api.herokuapp.com/products';
+    const url = 'http://hitwo-api.herokuapp.com/mobile/products';
     var products = List<Products>();
     try {
       var response = await http.get(url);
@@ -111,7 +115,7 @@ class _HomeState extends State<Home> {
   List<Category> retrieveCategories(){
     List<Category> categoryList = [
       Category("Motors", null, "https://www.loebermotors.com/public/images/mercedesbenz-main_o.jpg", "motors"),
-      Category("Fashion", null, "https://bec2df9eb90bb6604cfc-660d71a7a33bc04488a7427f5fddcedf.ssl.cf3.rackcdn.com/uploads/product_image/photo/5d39e2be9736d438fd07eab6/medium_2019_07_25_Tom_Naomi_BellaAndBlue_54405.jpg", "fashion"),
+      Category("Fashion", null, "https://1.bp.blogspot.com/-sc4bW7Ji3kk/WZT33z4bqOI/AAAAAAABlAg/ynj4j4K25c07XLzNl8w4SfoCEBzYa420wCLcBGAs/s1600/17_AFWL_SDR_0342_SDR_Mabhunu1.jpg", "fashion"),
       Category("Electronics",  null, "https://www.nutsvolts.com/uploads/articles/NV_0704_Christopherson_Large.jpg", "electronics"),
       Category("Collectables", null, "https://www.africancollectables.com/wp-content/uploads/2018/03/Dark-Wood-and-Silver-Jewellery-Box-African-Collectables.jpg", "collectables"),
       Category("Art", null, "https://live.mrf.io/statics/i/ps/www.herald.co.zw/wp-content/uploads/sites/2/2019/09/1609HR0700MUGABE-PAINTING.jpg?width=1200&enable=upscale", "art"),
@@ -127,9 +131,14 @@ class _HomeState extends State<Home> {
     return categoryList;
   }
 
+  getUserInfo() async{
+    prefs = await SharedPreferences.getInstance();
+  }
+
   @override
-  void initState() {
+  void initState(){
     getCurrentLocation();
+    getUserInfo();
     super.initState();
   }
 
@@ -171,440 +180,619 @@ class _HomeState extends State<Home> {
 
     _categories = retrieveCategories();
 
-    return SafeArea(
-          child: Scaffold(
-              body: SingleChildScrollView(
-                child: Column(
-                  children: <Widget>[
-                    Row(
+    return Stack(
+      children: <Widget>[
+        SafeArea(
+              child: Scaffold(
+                  body: SingleChildScrollView(
+                    child: Column(
                       children: <Widget>[
-                        Column(
+                        Row(
                           children: <Widget>[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            Column(
                               children: <Widget>[
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                      top: 16.0, right: 0.0, left: 16.0),
-                                  child: Row(
-                                    children: <Widget>[
-                                      GestureDetector(child: Icon(Icons.menu, size: 30,), onTap: (){print("Menu tapped");},),
-                                      SizedBox(width: 10),
-                                      Text(
-                                        "Product Locator",
-                                        style: TextStyle(
-                                          fontSize: ScreenUtil().setSp(
-                                              _width >= 360 ? 21 : 25,
-                                              allowFontScalingSelf: true),
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: ScreenUtil().setWidth(15),
-                                ),
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
                                     Padding(
                                       padding: EdgeInsets.only(
-                                          top: 16.0, right: 0.0, left: 16.0),
-                                      child: Icon(
-                                        Icons.location_on,
-                                        color: Colors.grey,
+                                          top: 16.0, right: 0.0, left: 12.0),
+                                      child: Row(
+                                        children: <Widget>[
+                                          InkWell(
+                                            child: Icon(Icons.menu, size: 30),
+                                            onTap: (){
+                                              setState(() {
+                                                isCollapsed = !isCollapsed;
+                                              });
+                                            },
+                                          ),
+                                          SizedBox(width: 10),
+                                          Text(
+                                            "Product Locator",
+                                            style: TextStyle(
+                                              fontSize: ScreenUtil().setSp(
+                                                  _width >= 360 ? 21 : 25,
+                                                  allowFontScalingSelf: true),
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                        top: 16.0,
-                                        left: 8.0,
-                                      ),
-                                      child: _currentLocation != null
-                                          ? Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: <Widget>[
-                                                Text("$_currentLocation"),
-                                                Text("$_currentCountry")
-                                              ],
-                                            )
-                                          : GestureDetector(
-                                              onTap: () {
-                                                setState(() {
-                                                  getCurrentLocation();
-                                                });
-                                              },
-                                              child: Text("Enable Location"),
-                                            ),
+                                    SizedBox(
+                                      width: ScreenUtil().setWidth(15),
+                                    ),
+                                    Row(
+                                      children: <Widget>[
+                                        Padding(
+                                          padding: EdgeInsets.only(
+                                              top: 16.0, right: 0.0, left: 16.0),
+                                          child: Icon(
+                                            Icons.location_on,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.only(
+                                            top: 16.0,
+                                            left: 8.0,
+                                          ),
+                                          child: _currentLocation != null
+                                              ? Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    Text("$_currentLocation"),
+                                                    Text("$_currentCountry")
+                                                  ],
+                                                )
+                                              : GestureDetector(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      getCurrentLocation();
+                                                    });
+                                                  },
+                                                  child: Text("Enable Location"),
+                                                ),
+                                        )
+                                      ],
                                     )
                                   ],
                                 )
                               ],
-                            )
+                            ),
                           ],
                         ),
-                      ],
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Container(
-                          alignment: Alignment.topLeft,
-                          margin: EdgeInsets.only(top: 30),
-                          width: ScreenUtil().setWidth(MediaQuery.of(context).size.width),
-                          height: ScreenUtil().setHeight(MediaQuery.of(context).size.height * 1.4),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(30.0),
-                                  topRight: Radius.circular(30.0),
-                              ),
-                              color: Color(0xFF6C00E9),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              SizedBox(
-                                height: ScreenUtil().setHeight(40),
-                              ),
-                              Container(
-                                padding: EdgeInsets.all(16.0),
-                                width: ScreenUtil().setWidth(
-                                    MediaQuery.of(context).size.width / 1.3),
-                                child: Text(
-                                  "What are you looking for?",
-                                  style: TextStyle(
-                                    fontSize: ScreenUtil()
-                                        .setSp(27, allowFontScalingSelf: true),
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                        Row(
+                          children: <Widget>[
+                            Container(
+                              alignment: Alignment.topLeft,
+                              margin: EdgeInsets.only(top: 30),
+                              width: ScreenUtil().setWidth(MediaQuery.of(context).size.width),
+                              height: ScreenUtil().setHeight(MediaQuery.of(context).size.height * 1.4),
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(30.0),
+                                      topRight: Radius.circular(30.0),
                                   ),
-                                ),
+                                  color: Color(0xFF6C00E9),
                               ),
-                              Stack(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
+                                  SizedBox(
+                                    height: ScreenUtil().setHeight(40),
+                                  ),
                                   Container(
                                     padding: EdgeInsets.all(16.0),
-                                    child: Form(
-                                      key: _formKey,
-                                      child: TextFormField(
-                                        decoration: InputDecoration(
-                                          hintText: "e.g. Nike Airmax",
-                                          hintStyle: TextStyle(color: Colors.white),
-                                          labelText: "Search",
-                                          labelStyle: TextStyle(color: Colors.white),
-                                          border: OutlineInputBorder(
-                                            gapPadding: 3.5,
-                                            borderRadius: BorderRadius.circular(8.0),
-                                          ),
+                                    width: ScreenUtil().setWidth(
+                                        MediaQuery.of(context).size.width / 1.3),
+                                    child: Text(
+                                      "What are you looking for?",
+                                      style: TextStyle(
+                                        fontSize: ScreenUtil()
+                                            .setSp(27, allowFontScalingSelf: true),
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                        // ignore: missing_return
-                                        validator: (value){
-                                          if(value.isEmpty){
-                                            Fluttertoast.showToast(
-                                              msg: "Search query can't be empty",
-                                              backgroundColor: Colors.grey,
-                                              textColor: Colors.red,
-                                            );
-                                          }else{
-                                            this.searchQuery = value;
-                                          }
-                                        },
                                     ),
                                   ),
-                                ),
-                                  Positioned(
-                                    right: 10,
-                                    top: 20,
-                                    child: IconButton(
-                                      icon: Icon(Icons.arrow_forward),
-                                      color: Colors.white,
-                                      onPressed: (){
-                                        if(_formKey.currentState.validate()){
-                                          if(this.searchQuery != ""){
-                                            Navigator.push(context, MaterialPageRoute(builder: (context) => SearchResults(this.searchQuery, this._products)));
-                                          }
-                                        }
-                                      },
-                                    ),
-                                  )
-                                ],
-                              ),
-                              SizedBox(
-                                height: 5,
-                              ),
-                              Container(
-                                padding: EdgeInsets.only(
-                                  left: 16.0,
-                                  right: 16.0
-                                ),
-                                alignment: Alignment.centerLeft,
-                                height: ScreenUtil().setHeight(_height < 640 ? 320 : 340),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: <Widget>[
-                                        Text(
-                                          "Popular Products",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 27,
-                                            fontWeight: FontWeight.bold,
+                                  Stack(
+                                    children: <Widget>[
+                                      Container(
+                                        padding: EdgeInsets.all(16.0),
+                                        child: Form(
+                                          key: _formKey,
+                                          child: TextFormField(
+                                            decoration: InputDecoration(
+                                              hintText: "e.g. Nike Airmax",
+                                              hintStyle: TextStyle(color: Colors.white),
+                                              labelText: "Search",
+                                              labelStyle: TextStyle(color: Colors.white),
+                                              border: OutlineInputBorder(
+                                                gapPadding: 3.5,
+                                                borderRadius: BorderRadius.circular(8.0),
+                                              ),
                                           ),
-                                        ),
-                                        GestureDetector(
-                                            onTap: () {
-                                              Navigator.push(context, MaterialPageRoute(builder: (context) => AllProductsScreen(this._products)));
+                                            // ignore: missing_return
+                                            validator: (value){
+                                              if(value.isEmpty){
+                                                Fluttertoast.showToast(
+                                                  msg: "Search query can't be empty",
+                                                  backgroundColor: Colors.grey,
+                                                  textColor: Colors.red,
+                                                );
+                                              }else{
+                                                this.searchQuery = value;
+                                              }
                                             },
-                                            child: Row(
-                                              children: <Widget>[
-                                                Text("View More",
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
-                                                Icon(Icons.arrow_forward,
-                                                    color: Colors.white)
-                                              ],
-                                            ))
-                                      ],
+                                        ),
+                                      ),
                                     ),
-                                    Container(
-                                        width: double.infinity,
-                                        height: 260,
-                                        child: _products.length != 0
-                                            ? ListView.builder(
-                                                scrollDirection: Axis.horizontal,
-                                                itemCount: _products.length,
-                                                itemBuilder: (context, index) {
-                                                  return Card(
-                                                    elevation: 24.0,
-                                                    child: Container(
-                                                      height: ScreenUtil().setHeight(200),
-                                                      width: ScreenUtil().setWidth(150),
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.white70,
-                                                      ),
-                                                      child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: <Widget>[
-                                                          Container(
-                                                            height: ScreenUtil().setHeight(140),
-                                                            width: ScreenUtil().setWidth(150),
-                                                            decoration: BoxDecoration(
-                                                              borderRadius: BorderRadius.only(
-                                                                bottomLeft: Radius.circular(16.0),
-                                                                bottomRight: Radius.circular(16.0),
-                                                              ),
-                                                            ),
-                                                            child: Hero(
-                                                              tag: "${_products[index].imageUrl}",
-                                                              child: Image(
-                                                                image: NetworkImage(
-                                                                  _products[index].imageUrl,
-                                                                ),
-                                                                fit: BoxFit.fitWidth,
-                                                              ),
-                                                            ),
+                                      Positioned(
+                                        right: 10,
+                                        top: 20,
+                                        child: IconButton(
+                                          icon: Icon(Icons.arrow_forward),
+                                          color: Colors.white,
+                                          onPressed: (){
+                                            if(_formKey.currentState.validate()){
+                                              if(this.searchQuery != ""){
+                                                Navigator.push(context, MaterialPageRoute(builder: (context) => SearchResults(this.searchQuery, this._products)));
+                                              }
+                                            }
+                                          },
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 5,
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.only(
+                                      left: 16.0,
+                                      right: 16.0
+                                    ),
+                                    alignment: Alignment.centerLeft,
+                                    height: ScreenUtil().setHeight(_height < 640 ? 320 : 340),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            Text(
+                                              "Popular Products",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 27,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            GestureDetector(
+                                                onTap: () {
+                                                  Navigator.push(context, MaterialPageRoute(builder: (context) => AllProductsScreen(this._products)));
+                                                },
+                                                child: Row(
+                                                  children: <Widget>[
+                                                    Text("View More",
+                                                        style: TextStyle(
+                                                            color: Colors.white)),
+                                                    Icon(Icons.arrow_forward,
+                                                        color: Colors.white)
+                                                  ],
+                                                ))
+                                          ],
+                                        ),
+                                        Container(
+                                            width: double.infinity,
+                                            height: 260,
+                                            child: _products.length != 0
+                                                ? ListView.builder(
+                                                    scrollDirection: Axis.horizontal,
+                                                    itemCount: _products.length,
+                                                    itemBuilder: (context, index) {
+                                                      return Card(
+                                                        elevation: 24.0,
+                                                        child: Container(
+                                                          height: ScreenUtil().setHeight(200),
+                                                          width: ScreenUtil().setWidth(150),
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.white70,
                                                           ),
-                                                          Padding(
-                                                            padding: const EdgeInsets.all(8.0),
-                                                            child: Row(
-                                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                children: <Widget>[
-                                                                  Text(
-                                                                    "${_products[index].name}",
-                                                                    style: TextStyle(
-                                                                      fontWeight: FontWeight.bold,
-                                                                    ),
+                                                          child: Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: <Widget>[
+                                                              Container(
+                                                                height: ScreenUtil().setHeight(140),
+                                                                width: ScreenUtil().setWidth(150),
+                                                                decoration: BoxDecoration(
+                                                                  borderRadius: BorderRadius.only(
+                                                                    bottomLeft: Radius.circular(16.0),
+                                                                    bottomRight: Radius.circular(16.0),
                                                                   ),
-                                                                  Container(
-                                                                      padding: EdgeInsets.all(5.0),
-                                                                      decoration: BoxDecoration(
-                                                                        color: Colors.blue,
-                                                                        borderRadius: BorderRadius.circular(15.0),
-                                                                      ),
-                                                                      child: Text(
-                                                                        "\$${_products[index].price}",
+                                                                ),
+                                                                child: Hero(
+                                                                  tag: "${_products[index].imageUrl}",
+                                                                  child: Image(
+                                                                    image: NetworkImage(
+                                                                      _products[index].imageUrl,
+                                                                    ),
+                                                                    fit: BoxFit.fitWidth,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              Padding(
+                                                                padding: const EdgeInsets.all(8.0),
+                                                                child: Row(
+                                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                    children: <Widget>[
+                                                                      Text(
+                                                                        "${_products[index].name}",
                                                                         style: TextStyle(
-                                                                          color: Colors.white,
+                                                                          fontWeight: FontWeight.bold,
                                                                         ),
                                                                       ),
+                                                                      Container(
+                                                                          padding: EdgeInsets.all(5.0),
+                                                                          decoration: BoxDecoration(
+                                                                            color: Colors.blue,
+                                                                            borderRadius: BorderRadius.circular(15.0),
+                                                                          ),
+                                                                          child: Text(
+                                                                            "\$${_products[index].price}",
+                                                                            style: TextStyle(
+                                                                              color: Colors.white,
+                                                                            ),
+                                                                          ),
+                                                                      ),
+                                                                    ],
+                                                                ),
+                                                              ),
+                                                              Padding(
+                                                                  padding: EdgeInsets.only(left: 8.0, right: 8.0),
+                                                                  child: Text(
+                                                                    "${_products[index].model}",
+                                                                    style: TextStyle(
+                                                                      fontSize: 11,
+                                                                      fontWeight: FontWeight.w600,
+                                                                    ),
                                                                   ),
-                                                                ],
-                                                            ),
+                                                              ),
+                                                              Padding(
+                                                                  padding: EdgeInsets.all(8.0),
+                                                                  child: GestureDetector(
+                                                                    onTap: () {
+                                                                      Navigator.push(
+                                                                        context,
+                                                                        MaterialPageRoute(builder: (context) => ProductDetails(_products[index])),
+                                                                      );
+                                                                    },
+                                                                    child: Container(
+                                                                      decoration: BoxDecoration(
+                                                                        color: Colors.blue,
+                                                                      ),
+                                                                      child: Padding(
+                                                                          padding: EdgeInsets.all(8.0),
+                                                                          child: Row(
+                                                                            mainAxisAlignment: MainAxisAlignment.center,
+                                                                            children: <Widget>[
+                                                                              Text(
+                                                                                "More Details",
+                                                                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+                                                                              ),
+                                                                              SizedBox(
+                                                                                width: 5,
+                                                                              ),
+                                                                              Icon(
+                                                                                Icons.open_in_browser,
+                                                                                size: 15,
+                                                                                color: Colors.white,
+                                                                              )
+                                                                            ],
+                                                                          ),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                              ),
+                                                            ],
                                                           ),
-                                                          Padding(
-                                                              padding: EdgeInsets.only(left: 8.0, right: 8.0),
+                                                        ),
+                                                      );
+                                                    })
+                                                : Center(
+                                                    child: Card(
+                                                      elevation: 24.0,
+                                                      child: Container(
+                                                        alignment: Alignment.center,
+                                                        height: 200,
+                                                        width: 400,
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.white,
+                                                          borderRadius: BorderRadius.circular(16.0),
+                                                        ),
+                                                        child: Column(
+                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                                          children: <Widget>[
+                                                            Padding(
+                                                              padding: EdgeInsets.all(8.0),
                                                               child: Text(
-                                                                "${_products[index].model}",
+                                                                "Wait While We Find Awesome Products For You",
                                                                 style: TextStyle(
-                                                                  fontSize: 11,
+                                                                  fontSize: 15,
                                                                   fontWeight: FontWeight.w600,
                                                                 ),
                                                               ),
+                                                            ),
+                                                            Padding(
+                                                              padding: EdgeInsets.all(8.0),
+                                                              child: SpinKitCircle(color: Colors.blue,),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                            ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.all(16.0),
+                                    alignment: Alignment.centerLeft,
+                                    height: 320,
+                                    child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            "Discover",
+                                            style: TextStyle(
+                                              fontSize: 27,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          Container(
+                                            width: double.infinity,
+                                            height: ScreenUtil().setHeight(210),
+                                            child: ListView.builder(
+                                                scrollDirection: Axis.horizontal,
+                                                itemCount: _categories.length,
+                                                itemBuilder: (context, index){
+                                                  return GestureDetector(
+                                                  onTap: (){
+                                                    Navigator.push(context, MaterialPageRoute(builder: (context) => ViewByCategory(_categories[index].query, _products)));
+                                                  },
+                                                  child: Card(
+                                                    elevation: 24.0,
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        borderRadius: BorderRadius.circular(16.0),
+                                                      ),
+                                                      width: ScreenUtil().setWidth(150),
+                                                      child: Column(
+                                                        children: <Widget>[
+                                                          Container(
+                                                            height: 150,
+                                                            child: Image(
+                                                              image: NetworkImage(_categories[index].backgroundImageUrl),
+                                                              fit: BoxFit.cover,
+                                                            )
                                                           ),
                                                           Padding(
-                                                              padding: EdgeInsets.all(8.0),
-                                                              child: GestureDetector(
-                                                                onTap: () {
-                                                                  Navigator.push(
-                                                                    context,
-                                                                    MaterialPageRoute(builder: (context) => ProductDetails(_products[index])),
-                                                                  );
-                                                                },
-                                                                child: Container(
-                                                                  decoration: BoxDecoration(
-                                                                    color: Colors.blue,
-                                                                  ),
-                                                                  child: Padding(
-                                                                      padding: EdgeInsets.all(8.0),
-                                                                      child: Row(
-                                                                        mainAxisAlignment: MainAxisAlignment.center,
-                                                                        children: <Widget>[
-                                                                          Text(
-                                                                            "More Details",
-                                                                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
-                                                                          ),
-                                                                          SizedBox(
-                                                                            width: 5,
-                                                                          ),
-                                                                          Icon(
-                                                                            Icons.open_in_browser,
-                                                                            size: 15,
-                                                                            color: Colors.white,
-                                                                          )
-                                                                        ],
-                                                                      ),
+                                                            padding: const EdgeInsets.all(10.0),
+                                                            child: Row(
+                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                              children: <Widget>[
+                                                                Text(
+                                                                  "Category",
+                                                                  style: TextStyle(
+                                                                    fontSize: 15,
+                                                                    fontWeight: FontWeight.bold,
                                                                   ),
                                                                 ),
-                                                              ),
+                                                                _categories[index].title2 != null ? Column(
+                                                                  children: <Widget>[
+                                                                    Text(_categories[index].title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),),
+                                                                    Text(_categories[index].title2, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),),
+                                                                  ],
+                                                                ) : Text(_categories[index].title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),),
+                                                              ],
+                                                            ),
                                                           ),
                                                         ],
                                                       ),
                                                     ),
+                                                  ),
                                                   );
-                                                })
-                                            : Center(
-                                                child: Card(
-                                                  elevation: 24.0,
-                                                  child: Container(
-                                                    alignment: Alignment.center,
-                                                    height: 200,
-                                                    width: 400,
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      borderRadius: BorderRadius.circular(16.0),
-                                                    ),
-                                                    child: Column(
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                                      children: <Widget>[
-                                                        Padding(
-                                                          padding: EdgeInsets.all(8.0),
-                                                          child: Text(
-                                                            "Wait While We Find Awesome Products For You",
-                                                            style: TextStyle(
-                                                              fontSize: 15,
-                                                              fontWeight: FontWeight.w600,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding: EdgeInsets.all(8.0),
-                                                          child: SpinKitCircle(color: Colors.blue,),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                        ),
-                                    )
-                                  ],
-                                ),
+                                                }
+                                            )
+                                          )
+                                        ]
+                                    ),
+                                  )
+                                ],
                               ),
-                              Container(
-                                padding: EdgeInsets.all(16.0),
-                                alignment: Alignment.centerLeft,
-                                height: 320,
-                                child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(
-                                        "Discover",
-                                        style: TextStyle(
-                                          fontSize: 27,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      Container(
-                                        width: double.infinity,
-                                        height: ScreenUtil().setHeight(210),
-                                        child: ListView.builder(
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: _categories.length,
-                                            itemBuilder: (context, index){
-                                              return GestureDetector(
-                                              onTap: (){
-                                                Navigator.push(context, MaterialPageRoute(builder: (context) => ViewByCategory(_categories[index].query, _products)));
-                                              },
-                                              child: Card(
-                                                elevation: 24.0,
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                    borderRadius: BorderRadius.circular(16.0),
-                                                  ),
-                                                  width: ScreenUtil().setWidth(150),
-                                                  child: Column(
-                                                    children: <Widget>[
-                                                      Container(
-                                                        height: 150,
-                                                        child: Image(
-                                                          image: NetworkImage(_categories[index].backgroundImageUrl),
-                                                          fit: BoxFit.cover,
-                                                        )
-                                                      ),
-                                                      Padding(
-                                                        padding: const EdgeInsets.all(10.0),
-                                                        child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                          children: <Widget>[
-                                                            Text(
-                                                              "Category",
-                                                              style: TextStyle(
-                                                                fontSize: 15,
-                                                                fontWeight: FontWeight.bold,
-                                                              ),
-                                                            ),
-                                                            _categories[index].title2 != null ? Column(
-                                                              children: <Widget>[
-                                                                Text(_categories[index].title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),),
-                                                                Text(_categories[index].title2, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),),
-                                                              ],
-                                                            ) : Text(_categories[index].title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              );
-                                            }
-                                        )
-                                      )
-                                    ]
-                                ),
-                              )
-                            ],
-                          ),
+                            )
+                          ],
                         )
                       ],
-                    )
-                  ],
+                    ),
+                  ),
+              ),
+        ),
+        AnimatedPositioned(
+          duration: Duration(milliseconds: 700),
+          left: isCollapsed ? -1 * _width : 0,
+          child: SafeArea(
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                height: _height,
+                width: _width,
+                color: Color(0xFF6C00E9),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            "Menu",
+                            style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          InkWell(
+                            child: Icon(
+                              Icons.close,
+                              size: 30,
+                              color: Colors.white,
+                            ),
+                            onTap: (){
+                              setState(() {
+                                isCollapsed = true;
+                              });
+                              },
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: _width * 0.2),
+                      Container(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12.0),
+                              child: Card(
+                                elevation: 10.0,
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                                  width: _width,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFFFFFFF),
+                                    borderRadius: BorderRadius.circular(16.0),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    child: Text(
+                                      "User Information",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12.0),
+                              child: Card(
+                                elevation: 10.0,
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                                  width: _width,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFFFFFFF),
+                                    borderRadius: BorderRadius.circular(16.0),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    child: Text(
+                                      "Change Password",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            InkWell(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                child: Card(
+                                  elevation: 10.0,
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                                    width: _width,
+                                    decoration: BoxDecoration(
+                                      color: Color(0xFFFFFFFF),
+                                      borderRadius: BorderRadius.circular(16.0),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                      child: Text(
+                                        "Logout",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              onTap: () async{
+                                ProgressDialog pr = new ProgressDialog(context, type: ProgressDialogType.Normal, isDismissible: true, showLogs: false);
+                                pr.style(
+                                  message: 'Signing out...',
+                                  borderRadius: 10.0,
+                                  backgroundColor: Colors.white,
+                                  progressWidget: SpinKitCircle(color: Color(0xFF6C00E9)),
+                                  elevation: 24.0,
+                                  insetAnimCurve: Curves.easeInOut,
+                                  messageTextStyle: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: ScreenUtil().setSp(19.0, allowFontScalingSelf: true),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                );
+                                pr.show();
+                                final prefs = await SharedPreferences.getInstance();
+                                await prefs.setString('id', null);
+                                await prefs.setString('username', null);
+                                await prefs.setString('email', null);
+                                await prefs.setString('mobileNumber', null);
+                                await prefs.setBool('isVerified', null);
+                                final username = prefs.getString('username');
+                                if(username == null){
+                                  pr.dismiss();
+                                  Navigator.pop(context);
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => SignIn()));
+                                }else{
+                                  pr.update(
+                                    message: 'Failed to sign out. Try again',
+                                    progressWidget: SpinKitCircle(color: Colors.red),
+                                    messageTextStyle: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: ScreenUtil().setSp(19.0, allowFontScalingSelf: true),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
+            ),
           ),
+        ),
+      ],
     );
   }
 }

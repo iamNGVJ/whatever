@@ -21,9 +21,8 @@ class _RegisterAccountState extends State<RegisterAccount> {
   String mobileNumber;
 
   // ignore: missing_return
-  Future<User> _register(
-      ProgressDialog pr, username, email, mobileNumber, password) async {
-    const url = "http://hitwo-api.herokuapp.com/signup";
+  Future<User> _register(ProgressDialog pr, username, email, mobileNumber, password) async {
+    const url = "http://hitwo-api.herokuapp.com/mobile/signup";
     var response = await http.post(url, body: {
       "username": username,
       "email": email,
@@ -84,10 +83,39 @@ class _RegisterAccountState extends State<RegisterAccount> {
                 scrollDirection: Axis.vertical,
                 child: SafeArea(
                     child: Column(children: <Widget>[
-                  SizedBox(height: ScreenUtil().setHeight(50)),
-                  Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              InkWell(
+                                child: Icon(Icons.arrow_back, size: 30,),
+                                onTap: (){
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              InkWell(
+                                child: Text(
+                                  "Already have an account?",
+                                  style:TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                onTap: (){
+                                  Navigator.pop(context);
+                                  Navigator.push(context, MaterialPageRoute(
+                                      builder: (context) => SignIn()
+                                  ));
+                                },
+                              ),
+                            ]
+                        ),
+                      ),
+                      SizedBox(height: ScreenUtil().setHeight(30)),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
@@ -158,7 +186,7 @@ class _RegisterAccountState extends State<RegisterAccount> {
                                     child: TextFormField(
                                       decoration: InputDecoration(
                                           labelText: "Mobile Number",
-                                          hintText: "e.g. 0777 111 111",
+                                          hintText: "e.g. 263777111111",
                                           border: OutlineInputBorder(
                                               gapPadding: 3.5)),
                                       // ignore: missing_return

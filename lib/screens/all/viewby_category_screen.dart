@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:link/models/product.dart';
+import 'package:link/screens/all/product_details.dart';
 
 // ignore: must_be_immutable
 class ViewByCategory extends StatefulWidget {
@@ -39,6 +40,9 @@ class _ViewByCategoryState extends State<ViewByCategory> {
       itemCount: this.widget._byCategory.length,
       itemBuilder: (context, index){
         return ListTile(
+          onTap: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ProductDetails(this.widget._byCategory[index])));
+          },
           leading: Image(image: NetworkImage(this.widget._byCategory[index].imageUrl)),
           title: Text(this.widget._byCategory[index].name, style: TextStyle(fontWeight: FontWeight.w600)),
           subtitle: Row(

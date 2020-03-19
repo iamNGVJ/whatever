@@ -73,8 +73,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     Text("Product Locator",
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: ScreenUtil()
-                              .setSp(28.0, allowFontScalingSelf: true),
+                          fontSize: ScreenUtil().setSp(28.0, allowFontScalingSelf: true),
                         ))
                   ]))),
           Expanded(
